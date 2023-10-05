@@ -1,6 +1,14 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional, IsEmail, IsAlpha, MinLength, MaxLength, Matches } from 'class-validator';
-import { Role } from '../schemas/user.schema';
-
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  IsEmail,
+  MinLength,
+  MaxLength,
+  Matches,
+} from 'class-validator';
+import { Role } from '../entity/user.entity';
 
 export class CreateAuthDto {
   @IsNotEmpty()
@@ -19,8 +27,10 @@ export class CreateAuthDto {
   @IsString()
   @MinLength(4)
   @MaxLength(20)
-  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, { message: 'password too weak' })
-  password: number;
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'password too weak',
+  })
+  password: string;
 
   @IsOptional()
   @IsEnum(Role, { message: 'Please enter correct role' })

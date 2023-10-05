@@ -1,34 +1,40 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateUserDto } from './dto/update-auth.dto';
-import { User } from './schemas/user.schema';
-import * as mongoose from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
+import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private bookModel: mongoose.Model<User>, private jwt: JwtService) { }
+  constructor(
+    @Inject('USER') private readonly userRepository: Repository<User>,
+    private jwt: JwtService,
+  ) {}
 
   async signup(createUserDto: CreateAuthDto): Promise<User> {
-
-    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-    return new this.bookModel(createUserDto).save();
+    createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
+    return this.userRepository.save(createUserDto);
   }
   findAll() {
     return `This action returns all users`;
   }
 
-  findOne(id: string) {
+  findOne(id: number) {
     return `This action returns a #${id} user`;
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  update(id: number, updateUserDto: UpdateUserDto) {
+    return this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ ...updateUserDto })
+      .whereInIds(id)
+      .execute();
   }
 
-  remove(id: string) {
+  remove(id: number) {
     return `This action removes a #${id} user`;
   }
 }
