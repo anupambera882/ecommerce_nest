@@ -13,19 +13,24 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async signup(createUserDto: CreateAuthDto): Promise<User> {
+  async signup(createUserDto: CreateAuthDto): Promise<any> {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
-    return this.userRepository.save(createUserDto);
+    return this.userRepository
+      .createQueryBuilder()
+      .insert()
+      .into(User)
+      .values([{ ...createUserDto }])
+      .execute();
   }
-  findAll() {
-    return `This action returns all users`;
+  findAll(): Promise<User[]> {
+    return this.userRepository.createQueryBuilder().getMany();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: number): Promise<User> {
+    return this.userRepository.createQueryBuilder().whereInIds(id).getMany()[0];
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
     return this.userRepository
       .createQueryBuilder()
       .update(User)
@@ -34,7 +39,11 @@ export class AuthService {
       .execute();
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  remove(id: number): Promise<any> {
+    return this.userRepository
+      .createQueryBuilder()
+      .softDelete()
+      .whereInIds(id)
+      .execute();
   }
 }

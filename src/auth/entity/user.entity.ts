@@ -1,4 +1,9 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  DeleteDateColumn,
+} from 'typeorm';
 
 export enum Role {
   SUPER_ADMIN = 'superAdmin',
@@ -30,4 +35,7 @@ export class User {
     default: Role.USER,
   })
   role: Role;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }
