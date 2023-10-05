@@ -5,12 +5,14 @@ import { User } from './entity/user.entity';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { Repository } from 'typeorm';
+import { LoginDto } from './dto/login.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
 
 @Injectable()
 export class AuthService {
   constructor(
     @Inject('USER') private readonly userRepository: Repository<User>,
-    private jwt: JwtService,
+    private jwtService: JwtService,
   ) {}
 
   async signup(createUserDto: CreateAuthDto): Promise<any> {
@@ -22,15 +24,15 @@ export class AuthService {
       .values([{ ...createUserDto }])
       .execute();
   }
-  findAll(): Promise<User[]> {
+  async findAll(): Promise<User[]> {
     return this.userRepository.createQueryBuilder().getMany();
   }
 
-  findOne(id: number): Promise<User> {
-    return this.userRepository.createQueryBuilder().whereInIds(id).getMany()[0];
+  async getUserByPk(pk: object): Promise<User> {
+    return this.userRepository.createQueryBuilder().where(pk).getMany()[0];
   }
 
-  update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
     return this.userRepository
       .createQueryBuilder()
       .update(User)
@@ -39,11 +41,26 @@ export class AuthService {
       .execute();
   }
 
-  remove(id: number): Promise<any> {
+  async remove(id: number): Promise<any> {
     return this.userRepository
       .createQueryBuilder()
       .softDelete()
       .whereInIds(id)
       .execute();
+  }
+
+  async login(user: LoginDto): Promise<LoginResponseDto> {
+    const loginUser = await this.getUserByPk({ email: user.email });
+    const { id, name, email, phone, role } = loginUser;
+    if (loginUser && loginUser.password === user.password) {
+      return {
+        statusCode: 200,
+        response: {
+          token: this.jwtService.sign({ id: loginUser.id }),
+          user: { id, name, email, phone, role },
+        },
+        message: 'User login successfully',
+      };
+    }
   }
 }
