@@ -20,7 +20,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @UseGuards(LocalAuthGuard)
-  @Post('auth/login')
+  @Post('login')
   async login(@Body() user: LoginDto) {
     return this.authService.login(user);
   }
@@ -31,8 +31,8 @@ export class AuthController {
     return this.authService.getUserByPk({ id });
   }
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
+  @Post('signup')
+  signup(@Body() createAuthDto: CreateAuthDto) {
     return this.authService.signup(createAuthDto);
   }
 
@@ -51,7 +51,7 @@ export class AuthController {
     return this.authService.update(+id, updateUserDto);
   }
 
-  @Delete(':id')
+  @Delete('deleteAccount/:id')
   remove(@Param('id') id: string) {
     return this.authService.remove(+id);
   }
