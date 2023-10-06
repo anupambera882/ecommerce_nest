@@ -32,12 +32,15 @@ export class AuthService {
     return this.userRepository.createQueryBuilder().where(pk).getMany()[0];
   }
 
-  async update(id: number, updateUserDto: UpdateUserDto): Promise<any> {
+  async update(
+    pk: object,
+    updateUserDto: Partial<UpdateUserDto>,
+  ): Promise<any> {
     return this.userRepository
       .createQueryBuilder()
       .update(User)
       .set({ ...updateUserDto })
-      .whereInIds(id)
+      .where(pk)
       .execute();
   }
 
