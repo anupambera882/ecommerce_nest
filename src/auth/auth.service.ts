@@ -15,21 +15,18 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async signup(createUserDto: CreateAuthDto): Promise<any> {
+  async createUser(createUserDto: CreateAuthDto): Promise<any> {
     createUserDto.password = await bcrypt.hash(createUserDto.password, 10);
-    return this.userRepository
-      .createQueryBuilder()
-      .insert()
-      .into(User)
-      .values([{ ...createUserDto }])
-      .execute();
+    return this.userRepository.save(createUserDto);
   }
   async findAll(): Promise<User[]> {
     return this.userRepository.createQueryBuilder().getMany();
   }
 
   async getUserByPk(pk: object): Promise<User> {
-    return this.userRepository.createQueryBuilder().where(pk).getMany()[0];
+    return (
+      await this.userRepository.createQueryBuilder().where(pk).getMany()
+    )[0];
   }
 
   async update(
@@ -54,13 +51,13 @@ export class AuthService {
 
   async login(user: LoginDto): Promise<LoginResponseDto> {
     const loginUser = await this.getUserByPk({ email: user.email });
-    const { id, name, email, phone, role } = loginUser;
+    const { name, email, phone, role } = loginUser;
     if (loginUser && loginUser.password === user.password) {
       return {
         statusCode: 200,
         response: {
           token: this.jwtService.sign({ id: loginUser.id }),
-          user: { id, name, email, phone, role },
+          user: { id: 1, name, email, phone, role },
         },
         message: 'User login successfully',
       };
